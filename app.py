@@ -23,6 +23,7 @@ class Blockchain:
     def __init__(self):
         self.chain = []
         self.current_messages = []
+        self.nodes = set()  # Conjunto de nodos conectados
         self.create_genesis_block()
 
     def create_genesis_block(self):
@@ -43,10 +44,18 @@ class Blockchain:
             'sender': sender,
             'message': content
         })
-        return self.get_last_block()['index'] + 1
+        return self.get_last_block().index + 1
 
     def get_last_block(self):
         return self.chain[-1]
+
+    def add_node(self, address):
+        """Añadir un nuevo nodo a la red"""
+        self.nodes.add(address)
+
+    def remove_node(self, address):
+        """Eliminar un nodo de la red"""
+        self.nodes.discard(address)
 
 # Configuración de la aplicación Flask con Socket.IO
 app = Flask(__name__)
@@ -56,24 +65,26 @@ blockchain = Blockchain()
 
 @app.route('/', methods=['GET'])
 def index():
-    imagen = request.GET['imagen']
+    #imagen = request.GET['imagen']
     return render_template("index.html")
 
 # Rutas HTTP
-@app.route('/send_message', methods=['POST'])
+@app.route('/send_message', methods=['GET'])
 def send_message():
-    values = request.get_json()
+    """Enviar un mensaje a la blockchain"""
+    sender = request.args.get('sender')
+    message = request.args.get('message')
 
-    required = ['sender', 'message']
-    if not all(k in values for k in required):
-        return 'Faltan parámetros', 400
+    if not sender or not message:
+        return 'Faltan parámetros: sender y message', 400
 
-    index = blockchain.new_message(values['sender'], values['message'])
-    response = {'message': f'Mensaje será añadido al bloque {index}'}
-    return jsonify(response), 201
+    index = blockchain.new_message(sender, message)
+    response = {'message': f' Mensaje será añadido al bloque {index}'}
+    return jsonify(response), 200
 
 @app.route('/mine', methods=['GET'])
 def mine():
+    """Minar un nuevo bloque"""
     new_block = blockchain.create_new_block()
     # Emitir el nuevo bloque a todos los nodos
     socketio.emit('new_block', new_block.__dict__)
@@ -87,9 +98,46 @@ def mine():
 
 @app.route('/chain', methods=['GET'])
 def full_chain():
+    """Obtener la blockchain completa"""
     response = {
         'chain': [block.__dict__ for block in blockchain.chain],
         'length': len(blockchain.chain)
+    }
+    return jsonify(response), 200
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    """Obtener la lista de nodos"""
+    response = {
+        'nodes': list(blockchain.nodes)
+    }
+    return jsonify(response), 200
+
+@app.route('/nodes/register', methods=['GET'])
+def register_node():
+    """Registrar un nuevo nodo"""
+    address = request.args.get('address')
+    if not address:
+        return "Falta el parámetro 'address'", 400
+
+    blockchain.add_node(address)
+    response = {
+        'message': 'Nodo añadido con éxito',
+        'nodes': list(blockchain.nodes)
+    }
+    return jsonify(response), 200
+
+@app.route('/nodes/remove', methods=['GET'])
+def remove_node():
+    """Eliminar un nodo"""
+    address = request.args.get('address')
+    if not address:
+        return "Falta el parámetro 'address'", 400
+
+    blockchain.remove_node(address)
+    response = {
+        'message': 'Nodo eliminado con éxito',
+        'nodes': list(blockchain.nodes)
     }
     return jsonify(response), 200
 

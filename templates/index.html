@@ -16,7 +16,7 @@
             position: fixed;
             width: 100%;
             top: 0;
-            z-index: 999999;
+            z-index: 999;
             text-align: center;
         }
         .container {
@@ -26,6 +26,7 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 5%;
         }
         h1 {
             margin-bottom: 20px;
@@ -52,7 +53,19 @@
         .btn:hover {
             background-color: #45a049;
         }
+        .btn:disabled {
+            background: gray !important;
+            border: 1px solid blue !important;
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js" integrity="sha512-+k1pnlgt4F1H8L7t3z95o3/KO+o78INEcXTbnoJQ/F2VqDVhWoaiVml/OEHv9HsVgxUaVW+IbiZPUJQfF/YxZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 <div id="p2p-interface">
@@ -64,27 +77,139 @@
     <div class="container">
         <h1>Administrar Nodos</h1>
 
-        <div class="node">
-            <h3>Nodo 1</h3>
-            <p>Dirección IP: 192.168.1.1</p>
-            <p>Estado: Conectado</p>
+        <div id="containLsNodes"></div>
+
+        <a href="#" id="btn1" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Añadir Nodo</a>
+        <a href="#" id="btn2" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Eliminar Nodo</a>
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel"></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <label for="basic-url" class="form-label">Dirección del nodo</label>
+                 <input type="text" id="inpNodo" class="form-control" placeholder="https/example:0000" >
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnAddNodo">Save changes</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="node">
-            <h3>Nodo 2</h3>
-            <p>Dirección IP: 192.168.1.2</p>
-            <p>Estado: Desconectado</p>
-        </div>
-
-        <div class="node">
-            <h3>Nodo 3</h3>
-            <p>Dirección IP: 192.168.1.3</p>
-            <p>Estado: Conectado</p>
-        </div>
-
-        <a href="#" class="btn">Añadir Nodo</a>
-        <a href="#" class="btn">Eliminar Nodo</a>
     </div>
 </div>
 </body>
+<script>
+     let action = '';
+    $( document ).ready(function() {
+
+        $("#btn1").click(()=>{
+            $("#exampleModalLabel").text("Agregar Nodo");
+            action = "add"
+        })
+        $("#btn2").click(()=>{
+            $("#exampleModalLabel").text("Eliminar Nodo");
+            action = "delete"
+
+        })
+
+        $.ajax({
+          method: "GET",
+          url: "http://127.0.0.1:5000/nodes",
+          contentType: "application/json",
+        success: function(data) {
+              let nodos = ``;
+              if(data?.nodes.length > 0){
+                  for (let i = 0; i < data?.nodes.length; i ++){
+                      nodos += `<div class="node">
+                                    <h3>Nodo ${i + 1}</h3>
+                                    <p>Dirección: ${data.nodes[i]}</p>
+                                    <p>Estado: Conectado</p>
+                                </div>`;
+                  }
+                  $("#btn1").attr("disabled", false);
+                  $("#btn2").attr("disabled", false);
+                  $("#containLsNodes").html(nodos);
+              }else{
+                let txt = `<h3>No se han encontrado nodos aún</h3>`;
+                $("#btn1").attr("disabled", true);
+                $("#btn2").attr("disabled", true);
+                $("#containLsNodes").html(txt);
+
+              }
+            console.log(data?.nodes);
+        },
+        error: function(error) {
+            console.error(error)
+        },
+        });
+    });
+
+    function addNodo (addres){
+
+        $.ajax({
+          method: "GET",
+          url: "/nodes/register?address="+addres,
+          contentType: "application/json",
+        success: async function(data) {
+            await Swal.fire({
+                icon: 'success',
+                title: data?.message,
+                showConfirmButton: true,
+                confirmButtonText: "Ok",
+                timer: 100000
+            });
+            location.href ="/";
+            console.log(data);
+        },
+        error: function(error) {
+            console.error(error)
+            Swal.fire(error);
+        },
+        });
+    }
+
+    function deleteNodo (addres){
+
+        $.ajax({
+          method: "GET",
+          url: "/nodes/remove?address="+addres,
+          contentType: "application/json",
+        success: async function(data) {
+            await Swal.fire({
+                icon: 'success',
+                title: data?.message,
+                showConfirmButton: true,
+                confirmButtonText: "Ok",
+                timer: 10000
+
+            });
+            location.href ="/";
+            console.log(data);
+        },
+        error: function(error) {
+            console.error(error)
+            Swal.fire(error);
+        },
+        });
+    }
+
+    $("#btnAddNodo").click(()=>{
+        if(action == "add"){
+          addNodo($("#inpNodo").val());
+        }
+    });
+
+    $("#btnAddNodo").click(()=>{
+        if (action == "delete"){
+            deleteNodo($("#inpNodo").val());
+        }
+    });
+
+</script>
 </html>
