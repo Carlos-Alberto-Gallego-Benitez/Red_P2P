@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Red P2P Primer Nodo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4a90e2;
+            color: white;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 999999;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .node {
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div id="p2p-interface">
+
+    <header>
+        <h1>Red de Nodos P2P</h1>
+    </header>
+
+    <div class="container">
+        <h1>Administrar Nodos</h1>
+
+        <div class="node">
+            <h3>Nodo 1</h3>
+            <p>Dirección IP: 192.168.1.1</p>
+            <p>Estado: Conectado</p>
+        </div>
+
+        <div class="node">
+            <h3>Nodo 2</h3>
+            <p>Dirección IP: 192.168.1.2</p>
+            <p>Estado: Desconectado</p>
+        </div>
+
+        <div class="node">
+            <h3>Nodo 3</h3>
+            <p>Dirección IP: 192.168.1.3</p>
+            <p>Estado: Conectado</p>
+        </div>
+
+        <a href="#" class="btn">Añadir Nodo</a>
+        <a href="#" class="btn">Eliminar Nodo</a>
+    </div>
+</div>
+</body>
+</html>
