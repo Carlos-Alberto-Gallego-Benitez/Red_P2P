@@ -4,6 +4,9 @@ import json
 from flask import Flask, jsonify, request, render_template
 from flask_socketio import SocketIO, emit
 import requests
+from flask_cors import CORS
+
+
 
 # Clase Block que representa un bloque en la blockchain
 class Block:
@@ -60,8 +63,19 @@ class Blockchain:
 # Configuración de la aplicación Flask con Socket.IO
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app, resources={r"/nodes": {"origins": "*"}})
 
 blockchain = Blockchain()
+
+@app.route('/view_chain', methods=['GET'])
+def view_chain():
+    #imagen = request.GET['imagen']
+    return render_template("chain.html")
+
+@app.route('/view_mine', methods=['GET'])
+def view_mine():
+    #imagen = request.GET['imagen']
+    return render_template("mine.html")
 
 @app.route('/', methods=['GET'])
 def index():
@@ -79,7 +93,7 @@ def send_message():
         return 'Faltan parámetros: sender y message', 400
 
     index = blockchain.new_message(sender, message)
-    response = {'message': f' Mensaje será añadido al bloque {index}'}
+    response = {'message': f' El mensaje fué añadido al bloque {index} ahora puedes minar y verlo en la blockchain'}
     return jsonify(response), 200
 
 @app.route('/mine', methods=['GET'])

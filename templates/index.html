@@ -81,6 +81,8 @@
 
         <a href="#" id="btn1" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Añadir Nodo</a>
         <a href="#" id="btn2" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Eliminar Nodo</a>
+        <a href="#" id="btn3" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal2">Envíar Mensaje</a>
+
 
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog">
@@ -101,6 +103,28 @@
           </div>
         </div>
 
+        <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel2"></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <label for="basic-url" class="form-label">Mensaje</label>
+                 <input type="text" id="msg" class="form-control" placeholder="¡Hello!" >
+                  <label for="basic-url" class="form-label">Remitente</label>
+                 <input type="text" id="sender" class="form-control" placeholder="Alice" >
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnAddMsg">Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
     </div>
 </div>
 </body>
@@ -115,7 +139,10 @@
         $("#btn2").click(()=>{
             $("#exampleModalLabel").text("Eliminar Nodo");
             action = "delete"
-
+        })
+        $("#btn3").click(()=>{
+            $("#exampleModalLabel2").text("Envíar Mensaje");
+            action = "message"
         })
 
         $.ajax({
@@ -199,6 +226,33 @@
         });
     }
 
+    async function addMensaje (){
+        let sender = $("#sender").val();
+        let message = $("#msg").val();
+
+        $.ajax({
+          method: "GET",
+          url: `/send_message?sender=${sender}&message=${message}`,
+          contentType: "application/json",
+        success: async function(data) {
+            await Swal.fire({
+                icon: 'success',
+                title: data?.message,
+                showConfirmButton: true,
+                confirmButtonText: "Ok",
+                timer: 10000
+
+            });
+            location.href ="/view_mine";
+            console.log(data);
+        },
+        error: function(error) {
+            console.error(error)
+            Swal.fire(error);
+        },
+        });
+    }
+
     $("#btnAddNodo").click(()=>{
         if(action == "add"){
           addNodo($("#inpNodo").val());
@@ -209,6 +263,10 @@
         if (action == "delete"){
             deleteNodo($("#inpNodo").val());
         }
+    });
+
+    $("#btnAddMsg").click(async ()=>{
+        await addMensaje();
     });
 
 </script>
