@@ -1,6 +1,8 @@
 import hashlib
 import time
 import json
+from urllib.parse import urlparse
+
 from flask import Flask, jsonify, request, render_template
 from flask_socketio import SocketIO, emit
 import requests
@@ -53,8 +55,15 @@ class Blockchain:
         return self.chain[-1]
 
     def add_node(self, address):
-        """Añadir un nuevo nodo a la red"""
-        self.nodes.add(address)
+        """
+        Agrega un nodo a la red si no está ya incluido.
+        :param address: Dirección del nodo (como una URL completa, e.g., http://127.0.0.1:5001).
+        """
+        parsed_url = urlparse(address)
+        if parsed_url.netloc:
+            self.nodes.add(parsed_url.netloc)
+        elif parsed_url.path:
+            self.nodes.add(parsed_url.path)
 
     def remove_node(self, address):
         """Eliminar un nodo de la red"""
@@ -184,4 +193,4 @@ def receive_new_block(data):
         print(f"Nuevo bloque añadido: {new_block.index}")
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=6000)
